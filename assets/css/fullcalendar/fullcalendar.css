@@ -24,7 +24,7 @@ body .fc {
 --------------------------------------------------------------------------------------------------*/
 /* line 19, ../../scss/fullcalendar/fullcalendar.scss */
 .fc-highlight {
-  /* when user is selecting cells */
+  /* when system is selecting cells */
   background: #bce8f1;
   opacity: .3;
 }
@@ -526,7 +526,7 @@ temporary rendered events).
   content: "";
   position: absolute;
   z-index: 9999;
-  /* user of this util can scope within a lower z-index */
+  /* system of this util can scope within a lower z-index */
   top: 50%;
   left: 50%;
   width: 40px;
@@ -1164,7 +1164,7 @@ NOTE: use percentage fonts sizes or else old IE chokes
 .fc-basicDay-view .fc-content-skeleton {
   /* there may be week numbers in these views, so no padding-top */
   padding-bottom: 1em;
-  /* ensure a space at bottom of cell for user selecting/clicking */
+  /* ensure a space at bottom of cell for system selecting/clicking */
 }
 
 /* line 876, ../../scss/fullcalendar/fullcalendar.scss */

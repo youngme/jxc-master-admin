@@ -8,17 +8,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Base CSS -->
-    <link rel="stylesheet" href="assets/css/basestyle/style.css">
+    <link rel="stylesheet" href="../assets/css/basestyle/style.css">
 
     <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="../assets/css/icons.css" rel="stylesheet">
 
     <!-- Fontawesome Icons -->
-    <link href="assets/css/fontawesome/fontawesome-all.min.css" rel="stylesheet">
+    <link href="../assets/css/fontawesome/fontawesome-all.min.css" rel="stylesheet">
 
-    <link href="assets/css/pages/login.css" rel="stylesheet">
+    <link href="../assets/css/pages/login.css" rel="stylesheet">
 
-    <title>Cosmo - Responsive Dashboard Admin Template</title>
+    <title>PH-7</title>
   </head>
   <body>
 
@@ -34,25 +34,25 @@
 
                   <div class="text-center mb-4"><span class="material-icons text-danger" style="font-size:6rem;" >wifi_tethering</span></div>
 
-                  <h3 class="h4 mb-5 text-center">Admin Login</h3>
+                  <h3 class="h4 mb-5 text-center">欢迎使用</h3>
 
 
 
                   <form>
                     <div class="form-group">
-                      <label for="exampleInputEmail1">Email or Username</label>
-                      <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                      <label for="username_Id">用户名</label>
+                      <input type="text" class="form-control" id="username_Id" name="username" placeholder="输入用户名">
                     </div>
                     <div class="form-group">
-                      <label for="exampleInputPassword1">Password</label>
-                      <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                      <label for="password_id">密码</label>
+                      <input type="password" class="form-control" id="password_id" name="password" placeholder="输入密码">
                     </div>
                     <div class="form-group form-check">
                       <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                      <label class="form-check-label" for="exampleCheck1">Remember me</label>
-                      <a href="#" data-toggle="modal" data-target="#forgotPassword" class="float-right">Password ?</a>
+                      <label class="form-check-label" for="exampleCheck1">记住我</label>
+                      <a href="#" data-toggle="modal" data-target="#forgotPassword" class="float-right">忘记密码 ?</a>
                     </div>
-                    <a href="index.html" class="btn mt-4 btn-primary btn-block">Login</a>
+                    <a class="btn mt-4 btn-primary btn-block" id="loginBtn_Id">登陆</a>
                   </form>
 
               </div>
@@ -88,20 +88,120 @@
       </div>
 
 
-      <script src="assets/js/jquery-3.3.1.slim.min.js"></script>
-      <script src="assets/js/popper.min.js"></script>
-      <script src="assets/js/bootstrap/bootstrap.min.js"></script>
-      <script src="assets/js/custom.js"></script>
+      <script src="../assets/js/lib/jquery.min.js"></script>
+      <script src="../assets/js/lib/popper.min.js"></script>
+      <script src="../assets/js/bootstrap/bootstrap.min.js"></script>
+      <script src="../assets/js/chosen-js/chosen.jquery.js"></script>
+      <script src="../assets/js/custom.js"></script>
+      <script src="../assets/js/utils.js"></script>
 
-
+      <script src="../assets/js/aes/aes.js"></script>
+      <script src="../assets/js/aes/pad-zeropadding-min.js"></script>
       <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-56821827-7"></script>
+      <script async src="../assets/js/gtag.js"></script>
       <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'UA-56821827-7');
+
+
+        function Encrypt(password,key){
+            var tokenKey = CryptoJS.enc.Utf8.parse(key);
+            var iv = CryptoJS.enc.Utf8.parse(key);
+            password = CryptoJS.enc.Utf8.parse(password);
+            var encrypted =CryptoJS.AES.encrypt(password, tokenKey, {iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7}).toString();
+            return encrypted;
+        }
+
+        function getUserKey() {
+            var data={
+                tokenKey: 'get'
+            }
+            $.ajax({
+                url:httpurl+"account/login",
+                type:'GET',
+                dataType:"json",
+                data:data,
+                timeout:5000,
+                contentType:"json/application",
+                cache:false,
+                crossDomain:true,
+                beforeSend: function(xhr) {
+                    xhr.withCredentials = true;
+                    // xhr.setRequestHeader("username", "admin");
+                    // xhr.setRequestHeader("deviceInfo", navigator.appVersion);
+                },
+                success:function(result){
+                    console.log(result);
+                    document.cookie="userKey="+result.data.userKey;
+                    document.cookie="tokenKey="+result.data.tokenKey;
+                    login();
+                    return true;
+                },
+                error:function(e){
+                    // if(e.responseJSON.code >200){
+                    //     // location.href="sign-in.html";
+                    // }
+                    return false;
+                }
+            })
+        }
+
+        function login() {
+            var data={
+                username:$("#username_Id").val(),
+                userKey:getCookie('userKey'),
+                methodName:'login',
+                timestamp:new Date().toUTCString()
+            };
+            if ($("#password_id").val().length <= 0) {
+                alert("请输入密码");
+            } else {
+                var password = Encrypt($("#password_id").val(),getCookie('tokenKey'));
+                console.log(password)
+                data.password = password;
+            }
+            $.ajax({
+                url:httpurl+"account/login",
+                type:'POST',
+                dataType:"json",
+                data:JSON.stringify(data),
+                timeout:5000,
+                contentType:"json/application",
+                cache:false,
+                crossDomain:true,
+                beforeSend: function(xhr) {
+                    xhr.withCredentials = true;
+                    // xhr.setRequestHeader("username", "admin");
+                    // xhr.setRequestHeader("deviceInfo", navigator.appVersion);
+                },
+                success:function(result){
+                    console.log(result);
+                    if(result.code==200){
+                        document.cookie="jwt="+result.data.jwt;
+                        location.href="index.html";
+                    }else{
+
+                    }
+                    return true;
+                },
+                error:function(e){
+                    // if(e.responseJSON.code >200){
+                    //     // location.href="sign-in.html";
+                    // }
+                    return false;
+                }
+            });
+        }
+
+
+        $("#loginBtn_Id").click(()=>{
+            this.getUserKey();
+            // console.log(navigator.appVersion.split("/")[0]);
+
+        })
       </script>
 
   </body>
